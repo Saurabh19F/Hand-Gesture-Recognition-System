@@ -3,8 +3,9 @@ Here’s a basic implementation of hand gesture recognition
 Step-by-Step Guide
 1. Install Required Libraries
 First, ensure you have the necessary libraries installed. You can install them using pip:
-pip install opencv-python numpy mediapipe
-2. Hand Gesture Recognition Code
+pip install flask opencv-python mediapipe numpy
+
+3. Hand Gesture Recognition Code
 Here’s a basic implementation of hand gesture recognition:
 gesture.py
 
