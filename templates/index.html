@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hand Gesture Recognition</title>
 </head>
 <body>
     <h1>Live Gesture Recognition</h1>
-    <img src="{{ url_for('video_feed') }}" width="640" height="480">
+
+    <!-- Webcam Video -->
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <!-- Captured Stream -->
+    <img id="processed-frame" src="">
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const processedFrame = document.getElementById('processed-frame');
+
+        // Access webcam
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+            }
+        }
+
+        startCamera();
+
+        // Capture and send frames to Flask
+        function sendFrame() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frameData = canvas.toDataURL('image/jpeg');
+
+            fetch('/process_frame', {
+                method: 'POST',
+                body: JSON.stringify({ image: frameData }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                processedFrame.src = "data:image/jpeg;base64," + data.processed_image;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Send a frame every 100ms
+        setInterval(sendFrame, 100);
+    </script>
 </body>
 </html>
+
