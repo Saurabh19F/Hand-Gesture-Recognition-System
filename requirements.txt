@@ -1,1 +1,5 @@
-pip install opencv-python numpy mediapipe
+flask
+opencv-python
+mediapipe
+numpy
+gunicorn
