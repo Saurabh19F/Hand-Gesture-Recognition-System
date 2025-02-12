@@ -1,6 +1,10 @@
+from flask import Flask, render_template, Response
 import cv2
 import mediapipe as mp
 import numpy as np
+
+app = Flask("GestureRecognition")
+  # Initialize Flask app
 
 # Initialize MediaPipe Hand model
 mp_hands = mp.solutions.hands
@@ -38,55 +42,38 @@ def recognize_gesture(landmarks):
         return "Call Me"
     elif not thumb_is_open and index_is_open and middle_is_open and not ring_is_open and not pinky_is_open:
         return "Peace Sign"
-    elif thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open and all(
-        [abs(landmarks[8].x - landmarks[4].x) > 0.1, abs(landmarks[12].x - landmarks[4].x) > 0.1,
-        abs(landmarks[16].x - landmarks[4].x) > 0.1, abs(landmarks[20].x - landmarks[4].x) > 0.1]):
-        return "Five Fingers Spread"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "Palm Closed with Thumb Up"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open and landmarks[4].y > landmarks[3].y:
-        return "Palm Closed with Thumb Down"
-    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "Shaka Sign"
-    elif thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Finger Gun"
-    
     else:
         return "Unknown Gesture"
 
-def main():
-    cap = cv2.VideoCapture(0)
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
+def generate_frames():
+    cap = cv2.VideoCapture(0)  # Open webcam
+    while True:
+        success, frame = cap.read()
+        if not success:
             break
 
-        
         frame = cv2.flip(frame, 1)
-        
-        
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-
         results = hands.process(rgb_frame)
         
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-            
                 mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                
-            
                 gesture = recognize_gesture(hand_landmarks.landmark)
                 cv2.putText(frame, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-        
-        
-        cv2.imshow('Hand Gesture Recognition', frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-    cap.release()
-    cv2.destroyAllWindows()
+@app.route('/')
+def index():
+    return render_template('index.html')  # HTML file for UI
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
-    main()
+    app.run(host='0.0.0.0', port=5000, debug=True)
