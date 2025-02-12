@@ -17,7 +17,7 @@ def recognize_gesture(landmarks):
     middle_is_open = landmarks[12].y < landmarks[10].y
     ring_is_open = landmarks[16].y < landmarks[14].y
     pinky_is_open = landmarks[20].y < landmarks[18].y
-
+    
     if thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open:
         return "Open Hand"
     elif not thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
@@ -26,6 +26,35 @@ def recognize_gesture(landmarks):
         return "Victory"
     elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
         return "Fist"
+    elif not thumb_is_open and not index_is_open and not middle_is_open and ring_is_open and pinky_is_open:
+        return "Rock Sign"
+    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
+        return "Thumbs Up"
+    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open and landmarks[4].y > landmarks[3].y > landmarks[2].y:
+        return "Thumbs Down"
+    elif thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
+        return "OK Sign"
+    elif not thumb_is_open and index_is_open and middle_is_open and ring_is_open and not pinky_is_open:
+        return "Three Fingers Up"
+    elif not thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open:
+        return "Four Fingers Up"
+    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
+        return "Call Me"
+    elif not thumb_is_open and index_is_open and middle_is_open and not ring_is_open and not pinky_is_open:
+        return "Peace Sign"
+    elif thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open and all(
+        [abs(landmarks[8].x - landmarks[4].x) > 0.1, abs(landmarks[12].x - landmarks[4].x) > 0.1,
+        abs(landmarks[16].x - landmarks[4].x) > 0.1, abs(landmarks[20].x - landmarks[4].x) > 0.1]):
+        return "Five Fingers Spread"
+    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
+        return "Palm Closed with Thumb Up"
+    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open and landmarks[4].y > landmarks[3].y:
+        return "Palm Closed with Thumb Down"
+    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
+        return "Shaka Sign"
+    elif thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
+        return "Finger Gun"
+    
     else:
         return "Unknown Gesture"
 
