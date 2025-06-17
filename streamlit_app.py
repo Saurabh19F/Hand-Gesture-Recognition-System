@@ -22,45 +22,45 @@ def recognize_gesture(landmarks):
     pinky = landmarks[20].y < landmarks[18].y
 
     if all([thumb, index, middle, ring, pinky]):
-        return "🖐️ Open Hand"
+        return " Open Hand"
     elif not thumb and index and not middle and not ring and not pinky:
-        return "👉 Pointing"
+        return " Pointing"
     elif not thumb and index and middle and not ring and not pinky:
-        return "✌️ Victory"
+        return " Victory"
     elif not thumb and not index and not middle and not ring and not pinky:
-        return "✊ Fist"
+        return " Fist"
     elif not thumb and not index and not middle and ring and pinky:
-        return "🤘 Rock Sign"
+        return " Rock Sign"
     elif thumb and not index and not middle and not ring and not pinky:
-        return "👍 Thumbs Up"
+        return " Thumbs Up"
     elif not thumb and not index and not middle and not ring and not pinky and landmarks[4].y > landmarks[3].y > landmarks[2].y:
-        return "👎 Thumbs Down"
+        return " Thumbs Down"
     elif thumb and index and not middle and not ring and pinky:
-        return "👌 OK Sign"
+        return " OK Sign"
     elif not thumb and index and middle and ring and not pinky:
-        return "🖖 Three Fingers Up"
+        return " Three Fingers Up"
     elif not thumb and index and middle and ring and pinky:
-        return "🖖 Four Fingers Up"
+        return " Four Fingers Up"
     elif thumb and not index and not middle and not ring and pinky:
-        return "🤙 Call Me"
+        return " Call Me"
     elif not thumb and index and middle and not ring and not pinky:
-        return "✌️ Peace Sign"
+        return " Peace Sign"
     elif thumb and index and middle and ring and pinky and all([
         abs(landmarks[8].x - landmarks[4].x) > 0.1,
         abs(landmarks[12].x - landmarks[4].x) > 0.1,
         abs(landmarks[16].x - landmarks[4].x) > 0.1,
         abs(landmarks[20].x - landmarks[4].x) > 0.1]):
-        return "🖐️ Five Fingers Spread"
+        return " Five Fingers Spread"
     elif not thumb and not index and not middle and not ring and pinky:
-        return "🤚 Palm Closed with Thumb Up"
+        return " Palm Closed with Thumb Up"
     elif not thumb and not index and not middle and not ring and not pinky and landmarks[4].y > landmarks[3].y:
-        return "🤚 Palm Closed with Thumb Down"
+        return " Palm Closed with Thumb Down"
     elif thumb and not index and not middle and not ring and pinky:
-        return "🤙 Shaka Sign"
+        return " Shaka Sign"
     elif thumb and index and not middle and not ring and not pinky:
-        return "🔫 Finger Gun"
+        return " Finger Gun"
     else:
-        return "❓ Unknown"
+        return " Unknown"
 
 # Define video transformer class
 class VideoProcessor(VideoTransformerBase):
