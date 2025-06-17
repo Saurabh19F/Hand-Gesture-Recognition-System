@@ -1,6 +1,4 @@
-flask
-opencv-python
-mediapipe
-numpy
-gunicorn
 streamlit
+opencv-python
+mediapipe==0.10.9
+numpy
