@@ -1,18 +1,19 @@
-# streamlit_app.py
 import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+import av
 
 st.set_page_config(page_title="Hand Gesture Recognition", layout="centered")
-st.title("🖐️ Hand Gesture Recognition (Streamlit)")
+st.title("🖐️ Hand Gesture Recognition (Streamlit + WebRTC)")
 
-# Initialize MediaPipe Hand model
+# Initialize MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.5)
 mp_drawing = mp.solutions.drawing_utils
 
-# Define gesture recognition function
+# Gesture recognition logic
 def recognize_gesture(landmarks):
     thumb = landmarks[4].x < landmarks[3].x < landmarks[2].x
     index = landmarks[8].y < landmarks[6].y
@@ -61,31 +62,20 @@ def recognize_gesture(landmarks):
     else:
         return "❓ Unknown"
 
-# Start webcam
-cap = cv2.VideoCapture(0)
-FRAME_WINDOW = st.image([])
+# Define video transformer class
+class VideoProcessor(VideoTransformerBase):
+    def transform(self, frame):
+        image = frame.to_ndarray(format="bgr24")
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = hands.process(rgb)
 
-st.markdown("Click **Stop** to end the session.")
-stop_btn = st.button("Stop")
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                gesture = recognize_gesture(hand_landmarks.landmark)
+                cv2.putText(image, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 20, 147), 2)
 
-while cap.isOpened() and not stop_btn:
-    ret, frame = cap.read()
-    if not ret:
-        st.write("Camera not detected.")
-        break
+        return image
 
-    frame = cv2.flip(frame, 1)
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb)
-
-    gesture = "No Hand Detected"
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            gesture = recognize_gesture(hand_landmarks.landmark)
-            cv2.putText(frame, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 20, 147), 2)
-
-    FRAME_WINDOW.image(frame, channels='BGR')
-
-cap.release()
-st.success("Camera stopped.")
+# Activate webcam in browser
+webrtc_streamer(key="gesture-detect", video_transformer_factory=VideoProcessor)
