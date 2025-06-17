@@ -1,91 +1,91 @@
-from flask import Flask, render_template, request, Response
+# streamlit_app.py
+import streamlit as st
 import cv2
 import numpy as np
 import mediapipe as mp
-import base64
 
-app = Flask("GestureRecognition")
+st.set_page_config(page_title="Hand Gesture Recognition", layout="centered")
+st.title("🖐️ Hand Gesture Recognition (Streamlit)")
 
 # Initialize MediaPipe Hand model
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.5)
 mp_drawing = mp.solutions.drawing_utils
 
+# Define gesture recognition function
 def recognize_gesture(landmarks):
-    thumb_is_open = landmarks[4].x < landmarks[3].x < landmarks[2].x
-    index_is_open = landmarks[8].y < landmarks[6].y
-    middle_is_open = landmarks[12].y < landmarks[10].y
-    ring_is_open = landmarks[16].y < landmarks[14].y
-    pinky_is_open = landmarks[20].y < landmarks[18].y
-    
-    if thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open:
-        return "Open Hand"
-    elif not thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Pointing"
-    elif not thumb_is_open and index_is_open and middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Victory"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Fist"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and ring_is_open and pinky_is_open:
-        return "Rock Sign"
-    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Thumbs Up"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open and landmarks[4].y > landmarks[3].y > landmarks[2].y:
-        return "Thumbs Down"
-    elif thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "OK Sign"
-    elif not thumb_is_open and index_is_open and middle_is_open and ring_is_open and not pinky_is_open:
-        return "Three Fingers Up"
-    elif not thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open:
-        return "Four Fingers Up"
-    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "Call Me"
-    elif not thumb_is_open and index_is_open and middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Peace Sign"
-    elif thumb_is_open and index_is_open and middle_is_open and ring_is_open and pinky_is_open and all(
-        [abs(landmarks[8].x - landmarks[4].x) > 0.1, abs(landmarks[12].x - landmarks[4].x) > 0.1,
-        abs(landmarks[16].x - landmarks[4].x) > 0.1, abs(landmarks[20].x - landmarks[4].x) > 0.1]):
-        return "Five Fingers Spread"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "Palm Closed with Thumb Up"
-    elif not thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open and landmarks[4].y > landmarks[3].y:
-        return "Palm Closed with Thumb Down"
-    elif thumb_is_open and not index_is_open and not middle_is_open and not ring_is_open and pinky_is_open:
-        return "Shaka Sign"
-    elif thumb_is_open and index_is_open and not middle_is_open and not ring_is_open and not pinky_is_open:
-        return "Finger Gun"
-    
+    thumb = landmarks[4].x < landmarks[3].x < landmarks[2].x
+    index = landmarks[8].y < landmarks[6].y
+    middle = landmarks[12].y < landmarks[10].y
+    ring = landmarks[16].y < landmarks[14].y
+    pinky = landmarks[20].y < landmarks[18].y
+
+    if all([thumb, index, middle, ring, pinky]):
+        return "🖐️ Open Hand"
+    elif not thumb and index and not middle and not ring and not pinky:
+        return "👉 Pointing"
+    elif not thumb and index and middle and not ring and not pinky:
+        return "✌️ Victory"
+    elif not thumb and not index and not middle and not ring and not pinky:
+        return "✊ Fist"
+    elif not thumb and not index and not middle and ring and pinky:
+        return "🤘 Rock Sign"
+    elif thumb and not index and not middle and not ring and not pinky:
+        return "👍 Thumbs Up"
+    elif not thumb and not index and not middle and not ring and not pinky and landmarks[4].y > landmarks[3].y > landmarks[2].y:
+        return "👎 Thumbs Down"
+    elif thumb and index and not middle and not ring and pinky:
+        return "👌 OK Sign"
+    elif not thumb and index and middle and ring and not pinky:
+        return "🖖 Three Fingers Up"
+    elif not thumb and index and middle and ring and pinky:
+        return "🖖 Four Fingers Up"
+    elif thumb and not index and not middle and not ring and pinky:
+        return "🤙 Call Me"
+    elif not thumb and index and middle and not ring and not pinky:
+        return "✌️ Peace Sign"
+    elif thumb and index and middle and ring and pinky and all([
+        abs(landmarks[8].x - landmarks[4].x) > 0.1,
+        abs(landmarks[12].x - landmarks[4].x) > 0.1,
+        abs(landmarks[16].x - landmarks[4].x) > 0.1,
+        abs(landmarks[20].x - landmarks[4].x) > 0.1]):
+        return "🖐️ Five Fingers Spread"
+    elif not thumb and not index and not middle and not ring and pinky:
+        return "🤚 Palm Closed with Thumb Up"
+    elif not thumb and not index and not middle and not ring and not pinky and landmarks[4].y > landmarks[3].y:
+        return "🤚 Palm Closed with Thumb Down"
+    elif thumb and not index and not middle and not ring and pinky:
+        return "🤙 Shaka Sign"
+    elif thumb and index and not middle and not ring and not pinky:
+        return "🔫 Finger Gun"
     else:
-        return "Unknown Gesture"
+        return "❓ Unknown"
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Start webcam
+cap = cv2.VideoCapture(0)
+FRAME_WINDOW = st.image([])
 
-@app.route('/process_frame', methods=['POST'])
-def process_frame():
-    try:
-        data = request.json['image']
-        img_data = base64.b64decode(data.split(',')[1])
-        np_arr = np.frombuffer(img_data, np.uint8)
-        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+st.markdown("Click **Stop** to end the session.")
+stop_btn = st.button("Stop")
 
-        # Convert to RGB for MediaPipe
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = hands.process(rgb_frame)
+while cap.isOpened() and not stop_btn:
+    ret, frame = cap.read()
+    if not ret:
+        st.write("Camera not detected.")
+        break
 
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                gesture = recognize_gesture(hand_landmarks.landmark)
-                cv2.putText(frame, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+    frame = cv2.flip(frame, 1)
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = hands.process(rgb)
 
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_bytes = base64.b64encode(buffer).decode('utf-8')
-        return {"image": f"data:image/jpeg;base64,{frame_bytes}"}
+    gesture = "No Hand Detected"
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            gesture = recognize_gesture(hand_landmarks.landmark)
+            cv2.putText(frame, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 20, 147), 2)
 
-    except Exception as e:
-        return {"error": str(e)}
+    FRAME_WINDOW.image(frame, channels='BGR')
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=10000, debug=True)
+cap.release()
+st.success("Camera stopped.")
